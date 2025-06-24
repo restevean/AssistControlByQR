@@ -1,8 +1,7 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
 from uuid import uuid4, UUID
 from sqlalchemy import create_engine, Column, String, Boolean
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -11,21 +10,21 @@ import qrcode
 import os
 from datetime import datetime
 from sqlalchemy import DateTime
+# from pydantic import BaseModel
+# import socket
 
-import socket
-
-# --- Configuracion ---
+# Configuration
 DB_PATH = "sqlite:///./invitados.db"
 CSV_PATH = "invitados.csv"
 QR_DIR = "static/qrs"
 TEMPLATES_DIR = "templates"
 LOCAL_IP = "192.168.28.186"  # IP local corregida para acceso desde otros dispositivos en la red
 
-# --- Crear carpetas necesarias ---
+# Create needed directories
 for path in ["static", QR_DIR, TEMPLATES_DIR]:
     os.makedirs(path, exist_ok=True)
 
-# --- Inicializacion ---
+# Inicialization
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
@@ -34,7 +33,7 @@ engine = create_engine(DB_PATH, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# --- Modelo ---
+# Model
 class Invitado(Base):
     __tablename__ = "invitados"
 
@@ -46,7 +45,7 @@ class Invitado(Base):
 
 Base.metadata.create_all(bind=engine)
 
-# --- Carga inicial desde CSV y generación de QR ---
+# Initial load from CSV and QR generation
 def cargar_invitados(regenerar_qrs: bool = False):
     df = pd.read_csv(CSV_PATH)
     db = SessionLocal()
@@ -71,7 +70,7 @@ def cargar_invitados(regenerar_qrs: bool = False):
     db.commit()
     db.close()
 
-# --- Endpoint de confirmacion ---
+# Configuration Endpoint
 @app.get("/confirmar")
 def confirmar_asistencia(id: UUID):
     db = SessionLocal()
@@ -91,7 +90,7 @@ def confirmar_asistencia(id: UUID):
     db.close()
     return RedirectResponse(url=f"/?msg={mensaje}", status_code=303)
 
-# --- Endpoint de inicio con listado de invitados ---
+# Initial endpoint with invitee list
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, msg: str = None):
     db = SessionLocal()
@@ -99,7 +98,7 @@ def home(request: Request, msg: str = None):
     db.close()
     return templates.TemplateResponse("inicio.html", {"request": request, "invitados": invitados, "msg": msg})
 
-# --- Acciones administrativas ---
+# Administrative actions
 @app.post("/regenerar")
 def regenerar_qrs():
     cargar_invitados(regenerar_qrs=True)
@@ -126,7 +125,7 @@ def reset_asistencias():
     db.close()
     return RedirectResponse(url="/?msg=Asistencias+reiniciadas", status_code=303)
 
-# --- Punto de entrada ---
+# Entry point for running the application
 if __name__ == "__main__":
     import sys
     regenerar = "--regenerar" in sys.argv
