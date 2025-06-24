@@ -5,6 +5,7 @@ description = ""
 authors = [
     {name = "restevean",email = "58455099+restevean@users.noreply.github.com"}
 ]
+package-mode = false
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -27,4 +28,15 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = ">=3.12,<4.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+pytest-mock = "^3.14.1"
+httpx = "^0.28.1"
+black = "^25.1.0"
+flake8 = "^7.3.0"
+isort = "^6.0.1"
+mypy = "^1.16.1"
+coverage = "^7.9.1"
+pre-commit = "^4.2.0"
 

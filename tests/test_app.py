@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from main import app, Base, Invitado, engine
+from main import Base, engine
 import main as app_main
 
 TEMPLATE_CONTENT = """
@@ -18,14 +18,17 @@ TEMPLATE_CONTENT = """
 </html>
 """
 
+
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
     # Create temp CSV
     tmp_csv = tmp_path / "invitados.csv"
-    df = pd.DataFrame([
-        {"nombre": "Alice", "email": "alice@example.com"},
-        {"nombre": "Bob", "email": "bob@example.com"},
-    ])
+    df = pd.DataFrame(
+        [
+            {"nombre": "Alice", "email": "alice@example.com"},
+            {"nombre": "Bob", "email": "bob@example.com"},
+        ]
+    )
     df.to_csv(tmp_csv, index=False)
     monkeypatch.setattr(app_main, "CSV_PATH", str(tmp_csv))
 
@@ -51,6 +54,7 @@ def client(tmp_path, monkeypatch):
 
     return TestClient(app_main.app)
 
+
 def test_regenerate_and_csv_load(client):
     resp = client.post("/regenerar", follow_redirects=False)
     assert resp.status_code == 303
@@ -61,6 +65,7 @@ def test_regenerate_and_csv_load(client):
     resp_home = client.get("/")
     assert "Alice" in resp_home.text
     assert "Bob" in resp_home.text
+
 
 def test_confirm_attendance(client):
     client.post("/regenerar", follow_redirects=False)
@@ -79,6 +84,7 @@ def test_confirm_attendance(client):
     assert row[0] == 1 and row[1] is not None
     conn.close()
 
+
 def test_reset_and_clear(client):
     client.post("/regenerar", follow_redirects=False)
     r = client.post("/reset-asistencias", follow_redirects=False)
@@ -94,6 +100,7 @@ def test_reset_and_clear(client):
     r2 = client.post("/limpiar", follow_redirects=False)
     assert "QRs+eliminados" in r2.headers["location"]
     assert os.listdir(app_main.QR_DIR) == []
+
 
 def test_send_emails(client, capsys):
     r = client.post("/enviar-emails", follow_redirects=False)

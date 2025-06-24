@@ -1,0 +1,37 @@
+repos:
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+        name: checking YAML
+      - id: check-json
+        name: checking JSON
+      - id: trailing-whitespace
+        exclude: ^README.md$
+      - id: check-merge-conflict
+      - id: check-case-conflict
+
+  - repo: local
+    hooks:
+      - id: ruff-all-in-one
+        name: Ruff (lint + format + isort + autostage)
+        entry: >
+          python -c "import sys, subprocess; files = sys.argv[1:]; ret = subprocess.call(['ruff', 'check',
+          '--fix', '--line-length', '120'] + files); subprocess.call(['ruff', 'format', '--line-length',
+          '120'] + files); subprocess.call(['git', 'add'] + files); sys.exit(ret)"
+
+        language: python
+        additional_dependencies:
+          - ruff
+        pass_filenames: true
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: run-tests
+        name: Launch tests using pytest before push
+        entry: bash -c "PYTHONPATH=. poetry run pytest"
+        language: system
+        pass_filenames: false
+        stages: [ pre-push ]

@@ -33,6 +33,7 @@ engine = create_engine(DB_PATH, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+
 # Model
 class Invitado(Base):
     __tablename__ = "invitados"
@@ -43,15 +44,17 @@ class Invitado(Base):
     ha_asistido = Column(Boolean, default=False)
     fecha_hora = Column(DateTime, nullable=True)  # agregar esta línea
 
+
 Base.metadata.create_all(bind=engine)
+
 
 # Initial load from CSV and QR generation
 def cargar_invitados(regenerar_qrs: bool = False):
     df = pd.read_csv(CSV_PATH)
     db = SessionLocal()
     for _, row in df.iterrows():
-        nombre = row['nombre']
-        email = row.get('email', None)
+        nombre = row["nombre"]
+        email = row.get("email", None)
 
         existente = db.query(Invitado).filter(Invitado.email == email).first()
         if existente:
@@ -69,6 +72,7 @@ def cargar_invitados(regenerar_qrs: bool = False):
 
     db.commit()
     db.close()
+
 
 # Configuration Endpoint
 @app.get("/confirmar")
@@ -90,6 +94,7 @@ def confirmar_asistencia(id: UUID):
     db.close()
     return RedirectResponse(url=f"/?msg={mensaje}", status_code=303)
 
+
 # Initial endpoint with invitee list
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, msg: str = None):
@@ -98,11 +103,13 @@ def home(request: Request, msg: str = None):
     db.close()
     return templates.TemplateResponse("inicio.html", {"request": request, "invitados": invitados, "msg": msg})
 
+
 # Administrative actions
 @app.post("/regenerar")
 def regenerar_qrs():
     cargar_invitados(regenerar_qrs=True)
     return RedirectResponse(url="/?msg=QRs+regenerados", status_code=303)
+
 
 @app.post("/limpiar")
 def limpiar_qrs():
@@ -112,10 +119,12 @@ def limpiar_qrs():
             os.remove(f_path)
     return RedirectResponse(url="/?msg=QRs+eliminados", status_code=303)
 
+
 @app.post("/enviar-emails")
 def enviar_emails():
     print("Simulación de envío de emails a todos los invitados...")
     return RedirectResponse(url="/?msg=Invitaciones+enviadas+(simulado)", status_code=303)
+
 
 @app.post("/reset-asistencias")
 def reset_asistencias():
@@ -125,9 +134,11 @@ def reset_asistencias():
     db.close()
     return RedirectResponse(url="/?msg=Asistencias+reiniciadas", status_code=303)
 
+
 # Entry point for running the application
 if __name__ == "__main__":
     import sys
+
     regenerar = "--regenerar" in sys.argv
     limpiar = "--limpiar" in sys.argv
 
