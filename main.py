@@ -9,6 +9,9 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 import pandas as pd
 import qrcode
 import os
+from datetime import datetime
+from sqlalchemy import DateTime
+
 import socket
 
 # --- Configuracion ---
@@ -39,6 +42,7 @@ class Invitado(Base):
     nombre = Column(String, nullable=False)
     email = Column(String, nullable=True, unique=True)
     ha_asistido = Column(Boolean, default=False)
+    fecha_hora = Column(DateTime, nullable=True)  # agregar esta línea
 
 Base.metadata.create_all(bind=engine)
 
@@ -80,6 +84,7 @@ def confirmar_asistencia(id: UUID):
         mensaje = f"{invitado.nombre}+ya+fue+registrado"
     else:
         invitado.ha_asistido = True
+        invitado.fecha_hora = datetime.now()
         db.commit()
         mensaje = f"Bienvenido+{invitado.nombre}"
 

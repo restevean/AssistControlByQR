@@ -110,6 +110,7 @@
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Asistencia</th>
+                <th>Fecha / Hora</th>
             </tr>
         </thead>
         <tbody>
@@ -122,6 +123,13 @@
                         <span class="asistio">✔ Asistió</span>
                     {% else %}
                         <span class="no-asistio">✘ No asistió</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if invitado.fecha_hora %}
+                        {{ invitado.fecha_hora.strftime("%d/%m/%Y %H:%M:%S") }}
+                    {% else %}
+                        -
                     {% endif %}
                 </td>
             </tr>
