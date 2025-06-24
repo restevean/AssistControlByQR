@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Invitados</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 2rem;
+            background-color: #f8f8f8;
+        }
+        h1 {
+            margin-bottom: 1rem;
+        }
+        .acciones {
+            margin-bottom: 2rem;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .regenerar { background-color: #3498db; color: white; }
+        .limpiar { background-color: #e67e22; color: white; }
+        .reiniciar { background-color: #9b59b6; color: white; }
+        .emails { background-color: #2ecc71; color: white; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .asistio {
+            color: green;
+            font-weight: bold;
+        }
+        .no-asistio {
+            color: red;
+            font-weight: bold;
+        }
+        .mensaje {
+            height: 2.5rem;
+            line-height: 2.5rem;
+            margin-bottom: 1rem;
+            padding: 0 1rem;
+            background-color: #dff0d8;
+            border: 1px solid #b2d8b2;
+            color: #3c763d;
+            border-radius: 5px;
+            position: relative;
+            visibility: visible;
+            transition: visibility 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 1;
+        }
+        .mensaje.oculto {
+            visibility: hidden;
+            opacity: 0;
+        }
+        .mensaje .cerrar {
+            position: absolute;
+            top: 0;
+            right: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 Lista de invitados</h1>
+
+    <div id="mensaje" class="mensaje{% if not msg %} oculto{% endif %}">
+        <span class="cerrar" onclick="document.getElementById('mensaje').classList.add('oculto');">✖</span>
+        {{ msg or '' }}
+    </div>
+    <script>
+        setTimeout(() => {
+            const mensaje = document.getElementById('mensaje');
+            if (mensaje) mensaje.classList.add('oculto');
+        }, 5000);
+    </script>
+
+    <div class="acciones">
+        <form method="post" action="/regenerar" style="display:inline;">
+            <button type="submit" class="regenerar">🔄 Regenerar QRs</button>
+        </form>
+        <form method="post" action="/limpiar" style="display:inline;">
+            <button type="submit" class="limpiar">🗑 Borrar QRs</button>
+        </form>
+        <form method="post" action="/reset-asistencias" style="display:inline;">
+            <button type="submit" class="reiniciar">♻️ Reiniciar asistencias</button>
+        </form>
+        <form method="post" action="/enviar-emails" style="display:inline;">
+            <button type="submit" class="emails">📧 Enviar invitaciones</button>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Asistencia</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invitado in invitados %}
+            <tr>
+                <td>{{ invitado.nombre }}</td>
+                <td>{{ invitado.email or '-' }}</td>
+                <td>
+                    {% if invitado.ha_asistido %}
+                        <span class="asistio">✔ Asistió</span>
+                    {% else %}
+                        <span class="no-asistio">✘ No asistió</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

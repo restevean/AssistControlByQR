@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            max-width: 500px;
+        }
+        .mensaje {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .ok {
+            color: green;
+        }
+        .ya-registrado {
+            color: orange;
+        }
+        .error {
+            color: red;
+        }
+        .icono {
+            font-size: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if 'Bienvenido' in mensaje %}
+            <div class="icono">✅</div>
+            <div class="mensaje ok">{{ mensaje }}</div>
+        {% elif 'ya ha sido registrado' in mensaje %}
+            <div class="icono">⚠️</div>
+            <div class="mensaje ya-registrado">{{ mensaje }}</div>
+        {% else %}
+            <div class="icono">❌</div>
+            <div class="mensaje error">{{ mensaje }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>

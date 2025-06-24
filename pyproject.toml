@@ -1,0 +1,28 @@
+[project]
+name = "eventoqr"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "restevean",email = "58455099+restevean@users.noreply.github.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi (>=0.115.13,<0.116.0)",
+    "uuid (>=1.30,<2.0)",
+    "sqlalchemy (>=2.0.41,<3.0.0)",
+    "pandas (>=2.3.0,<3.0.0)",
+    "jinja2 (>=3.1.6,<4.0.0)",
+    "qrcode[pil] (>=8.2,<9.0)",
+    "uvicorn[standard] (>=0.34.3,<0.35.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+
