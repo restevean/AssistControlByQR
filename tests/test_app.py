@@ -43,7 +43,9 @@ def client(tmp_path, monkeypatch):
     tmp_db = tmp_path / "test.db"
     monkeypatch.setattr(app_main, "DB_PATH", f"sqlite:///{tmp_db}")
     # Recreate engine
-    app_main.engine = create_engine(app_main.DB_PATH, connect_args={"check_same_thread": False})
+    app_main.engine = create_engine(
+        app_main.DB_PATH, connect_args={"check_same_thread": False}
+    )
     Base.metadata.drop_all(bind=app_main.engine)
     Base.metadata.create_all(bind=app_main.engine)
 
@@ -72,7 +74,9 @@ def test_regenerate_and_csv_load(client):
 def test_confirm_attendance(client):
     client.post("/regenerar", follow_redirects=False)
     conn = sqlite3.connect(engine.url.database)
-    alice_id = conn.execute("SELECT id FROM invitados WHERE nombre='Alice'").fetchone()[0]
+    alice_id = conn.execute("SELECT id FROM invitados WHERE nombre='Alice'").fetchone()[
+        0
+    ]
     conn.close()
 
     r1 = client.get(f"/confirmar?id={alice_id}", follow_redirects=False)
@@ -82,7 +86,9 @@ def test_confirm_attendance(client):
     assert "Alice+ya+fue+registrado" in r2.headers["location"]
 
     conn = sqlite3.connect(engine.url.database)
-    row = conn.execute("SELECT ha_asistido, fecha_hora FROM invitados WHERE id=?", (alice_id,)).fetchone()
+    row = conn.execute(
+        "SELECT ha_asistido, fecha_hora FROM invitados WHERE id=?", (alice_id,)
+    ).fetchone()
     assert row[0] == 1 and row[1] is not None
     conn.close()
 
@@ -93,7 +99,9 @@ def test_reset_and_clear(client):
     assert r.status_code == 303 and "Asistencias+reiniciadas" in r.headers["location"]
 
     conn = sqlite3.connect(engine.url.database)
-    count = conn.execute("SELECT COUNT(*) FROM invitados WHERE ha_asistido=1").fetchone()[0]
+    count = conn.execute(
+        "SELECT COUNT(*) FROM invitados WHERE ha_asistido=1"
+    ).fetchone()[0]
     assert count == 0
     conn.close()
 
