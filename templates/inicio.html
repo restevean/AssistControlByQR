@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de Invitados</title>
+    <title>Panel de Asistencias</title>
     <style>
         body {
             font-family: sans-serif;
@@ -40,14 +40,6 @@
         th {
             background-color: #f0f0f0;
         }
-        .asistio {
-            color: green;
-            font-weight: bold;
-        }
-        .no-asistio {
-            color: red;
-            font-weight: bold;
-        }
         .mensaje {
             height: 2.5rem;
             line-height: 2.5rem;
@@ -76,7 +68,7 @@
     </style>
 </head>
 <body>
-    <h1>📋 Lista de invitados</h1>
+    <h1>📋 Registro de entradas y salidas</h1>
 
     <div id="mensaje" class="mensaje{% if not msg %} oculto{% endif %}">
         <span class="cerrar" onclick="document.getElementById('mensaje').classList.add('oculto');">✖</span>
@@ -109,25 +101,25 @@
             <tr>
                 <th>Nombre</th>
                 <th>Email</th>
-                <th>Asistencia</th>
-                <th>Fecha / Hora</th>
+                <th>Fecha Entrada</th>
+                <th>Fecha Salida</th>
             </tr>
         </thead>
         <tbody>
-            {% for invitado in invitados %}
+            {% for asist in invitados %}
             <tr>
-                <td>{{ invitado.nombre }}</td>
-                <td>{{ invitado.email or '-' }}</td>
+                <td>{{ asist.nombre }}</td>
+                <td>{{ asist.email or '-' }}</td>
                 <td>
-                    {% if invitado.ha_asistido %}
-                        <span class="asistio">✔ Asistió</span>
+                    {% if asist.fecha_entrada %}
+                        {{ asist.fecha_entrada.strftime("%d/%m/%Y %H:%M:%S") }}
                     {% else %}
-                        <span class="no-asistio">✘ No asistió</span>
+                        -
                     {% endif %}
                 </td>
                 <td>
-                    {% if invitado.fecha_hora %}
-                        {{ invitado.fecha_hora.strftime("%d/%m/%Y %H:%M:%S") }}
+                    {% if asist.fecha_salida %}
+                        {{ asist.fecha_salida.strftime("%d/%m/%Y %H:%M:%S") }}
                     {% else %}
                         -
                     {% endif %}

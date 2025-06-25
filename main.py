@@ -3,22 +3,19 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from uuid import uuid4, UUID
-from sqlalchemy import create_engine, Column, String, Boolean
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import create_engine, Column, String, DateTime, ForeignKey, desc
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 import pandas as pd
 import qrcode
 import os
 from datetime import datetime
-from sqlalchemy import DateTime
-# from pydantic import BaseModel
-# import socket
 
 # Configuration
 DB_PATH = "sqlite:///./invitados.db"
 CSV_PATH = "invitados.csv"
 QR_DIR = "static/qrs"
 TEMPLATES_DIR = "templates"
-LOCAL_IP = "192.168.28.186"  # IP local corregida para acceso desde otros dispositivos en la red
+LOCAL_IP = "192.168.28.186"
 
 # Create needed directories
 for path in ["static", QR_DIR, TEMPLATES_DIR]:
@@ -34,21 +31,29 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
-# Model
+# Models
 class Invitado(Base):
     __tablename__ = "invitados"
-
     id = Column(String, primary_key=True, index=True)
     nombre = Column(String, nullable=False)
     email = Column(String, nullable=True, unique=True)
-    ha_asistido = Column(Boolean, default=False)
-    fecha_hora = Column(DateTime, nullable=True)  # agregar esta línea
+    asistencias = relationship("Asistencia", back_populates="invitado")
+
+
+class Asistencia(Base):
+    __tablename__ = "asistencias"
+    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))
+    invitado_id = Column(String, ForeignKey("invitados.id"))
+    fecha_entrada = Column(DateTime, nullable=True)
+    fecha_salida = Column(DateTime, nullable=True)
+
+    invitado = relationship("Invitado", back_populates="asistencias")
 
 
 Base.metadata.create_all(bind=engine)
 
 
-# Initial load from CSV and QR generation
+# CSV load and QR generation
 def cargar_invitados(regenerar_qrs: bool = False):
     df = pd.read_csv(CSV_PATH)
     db = SessionLocal()
@@ -74,37 +79,62 @@ def cargar_invitados(regenerar_qrs: bool = False):
     db.close()
 
 
-# Configuration Endpoint
 @app.get("/confirmar")
 def confirmar_asistencia(id: UUID):
     db = SessionLocal()
     invitado = db.query(Invitado).filter(Invitado.id == str(id)).first()
     if not invitado:
         db.close()
-        return RedirectResponse(url="/?msg=Invitaci%C3%B3n+inv%C3%A1lida", status_code=303)
+        return RedirectResponse(
+            url="/?msg=Invitaci%C3%B3n+inv%C3%A1lida", status_code=303
+        )
 
-    if invitado.ha_asistido:
-        mensaje = f"{invitado.nombre}+ya+fue+registrado"
+    ultima = (
+        db.query(Asistencia)
+        .filter(Asistencia.invitado_id == str(id))
+        .order_by(desc(Asistencia.fecha_entrada))
+        .first()
+    )
+    ahora = datetime.now()
+
+    if not ultima or (ultima and ultima.fecha_salida is not None):
+        nueva = Asistencia(invitado_id=str(id), fecha_entrada=ahora)
+        db.add(nueva)
+        mensaje = (
+            f"Bienvenido+{invitado.nombre}"
+            if not ultima
+            else f"Entrada+registrada+para+{invitado.nombre}"
+        )
     else:
-        invitado.ha_asistido = True
-        invitado.fecha_hora = datetime.now()
-        db.commit()
-        mensaje = f"Bienvenido+{invitado.nombre}"
+        ultima.fecha_salida = ahora
+        mensaje = f"Salida+registrada+para+{invitado.nombre}"
 
+    db.commit()
     db.close()
     return RedirectResponse(url=f"/?msg={mensaje}", status_code=303)
 
 
-# Initial endpoint with invitee list
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, msg: str = None):
     db = SessionLocal()
-    invitados = db.query(Invitado).order_by(Invitado.nombre).all()
+    asistencias = (
+        db.query(Asistencia).join(Invitado).order_by(Asistencia.fecha_entrada).all()
+    )
+    datos = [
+        {
+            "nombre": a.invitado.nombre,
+            "email": a.invitado.email,
+            "fecha_entrada": a.fecha_entrada,
+            "fecha_salida": a.fecha_salida,
+        }
+        for a in asistencias
+    ]
     db.close()
-    return templates.TemplateResponse("inicio.html", {"request": request, "invitados": invitados, "msg": msg})
+    return templates.TemplateResponse(
+        "inicio.html", {"request": request, "invitados": datos, "msg": msg}
+    )
 
 
-# Administrative actions
 @app.post("/regenerar")
 def regenerar_qrs():
     cargar_invitados(regenerar_qrs=True)
@@ -123,19 +153,20 @@ def limpiar_qrs():
 @app.post("/enviar-emails")
 def enviar_emails():
     print("Simulación de envío de emails a todos los invitados...")
-    return RedirectResponse(url="/?msg=Invitaciones+enviadas+(simulado)", status_code=303)
+    return RedirectResponse(
+        url="/?msg=Invitaciones+enviadas+(simulado)", status_code=303
+    )
 
 
 @app.post("/reset-asistencias")
 def reset_asistencias():
     db = SessionLocal()
-    db.query(Invitado).update({Invitado.ha_asistido: False})
+    db.query(Asistencia).delete()
     db.commit()
     db.close()
     return RedirectResponse(url="/?msg=Asistencias+reiniciadas", status_code=303)
 
 
-# Entry point for running the application
 if __name__ == "__main__":
     import sys
 
@@ -152,4 +183,6 @@ if __name__ == "__main__":
     print(f"IP local usada: {LOCAL_IP}")
     print("Generando base de datos e invitaciones...")
     cargar_invitados(regenerar_qrs=regenerar)
-    print("Listo. Ahora ejecuta 'poetry run uvicorn main:app --host 0.0.0.0 --port 8000'")
+    print(
+        "Listo. Ahora ejecuta 'poetry run uvicorn main:app --host 0.0.0.0 --port 8000'"
+    )
