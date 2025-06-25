@@ -96,6 +96,11 @@
         </form>
     </div>
 
+    {% set ultimos = {} %}
+    {% for asist in invitados %}
+        {% set _ = ultimos.update({asist.nombre: loop.index0}) %}
+    {% endfor %}
+
     <table>
         <thead>
             <tr>
@@ -107,8 +112,18 @@
         </thead>
         <tbody>
             {% for asist in invitados %}
+
             <tr>
-                <td>{{ asist.nombre }}</td>
+                <td>
+                    {% if loop.index0 == ultimos[asist.nombre] %}
+                        {% if not asist.fecha_salida %}
+                            ✅
+                        {% else %}
+                            ❌
+                        {% endif %}
+                    {% endif %}
+                    {{ asist.nombre }}
+                </td>
                 <td>{{ asist.email or '-' }}</td>
                 <td>
                     {% if asist.fecha_entrada %}

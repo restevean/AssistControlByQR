@@ -10,12 +10,21 @@ repos:
     rev: v0.12.0
     hooks:
       - id: ruff-check
-        stages: [ pre-commit ]
-      - id: ruff-format
-        stages: [ pre-commit ]
+        stages: [pre-commit]
 
   - repo: local
     hooks:
+      - id: ruff-format-and-stage
+        name: Format and stage Python files with Ruff
+        entry: |
+          bash -c '
+          ruff format . || true
+          git diff --name-only --diff-filter=ACM | grep -E "\.py$" | xargs -r git add
+          '
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
       - id: run-tests
         name: Run tests using pytest before push
         entry: bash -c "PYTHONPATH=. poetry run pytest"
