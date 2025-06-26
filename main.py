@@ -21,6 +21,7 @@ LOCAL_IP = "192.168.28.186"
 for path in ["static", QR_DIR, TEMPLATES_DIR]:
     os.makedirs(path, exist_ok=True)
 
+
 # Inicialization
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -85,26 +86,17 @@ def confirmar_asistencia(id: UUID):
     invitado = db.query(Invitado).filter(Invitado.id == str(id)).first()
     if not invitado:
         db.close()
-        return RedirectResponse(
-            url="/?msg=Invitaci%C3%B3n+inv%C3%A1lida", status_code=303
-        )
+        return RedirectResponse(url="/?msg=Invitaci%C3%B3n+inv%C3%A1lida", status_code=303)
 
     ultima = (
-        db.query(Asistencia)
-        .filter(Asistencia.invitado_id == str(id))
-        .order_by(desc(Asistencia.fecha_entrada))
-        .first()
+        db.query(Asistencia).filter(Asistencia.invitado_id == str(id)).order_by(desc(Asistencia.fecha_entrada)).first()
     )
     ahora = datetime.now()
 
     if not ultima or (ultima and ultima.fecha_salida is not None):
         nueva = Asistencia(invitado_id=str(id), fecha_entrada=ahora)
         db.add(nueva)
-        mensaje = (
-            f"Bienvenido+{invitado.nombre}"
-            if not ultima
-            else f"Entrada+registrada+para+{invitado.nombre}"
-        )
+        mensaje = f"Bienvenido+{invitado.nombre}" if not ultima else f"Entrada+registrada+para+{invitado.nombre}"
     else:
         ultima.fecha_salida = ahora
         mensaje = f"Salida+registrada+para+{invitado.nombre}"
@@ -117,9 +109,7 @@ def confirmar_asistencia(id: UUID):
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, msg: str = None):
     db = SessionLocal()
-    asistencias = (
-        db.query(Asistencia).join(Invitado).order_by(Asistencia.fecha_entrada).all()
-    )
+    asistencias = db.query(Asistencia).join(Invitado).order_by(Asistencia.fecha_entrada).all()
     datos = [
         {
             "nombre": a.invitado.nombre,
@@ -130,9 +120,7 @@ def home(request: Request, msg: str = None):
         for a in asistencias
     ]
     db.close()
-    return templates.TemplateResponse(
-        "inicio.html", {"request": request, "invitados": datos, "msg": msg}
-    )
+    return templates.TemplateResponse("inicio.html", {"request": request, "invitados": datos, "msg": msg})
 
 
 @app.post("/regenerar")
@@ -153,9 +141,7 @@ def limpiar_qrs():
 @app.post("/enviar-emails")
 def enviar_emails():
     print("Simulación de envío de emails a todos los invitados...")
-    return RedirectResponse(
-        url="/?msg=Invitaciones+enviadas+(simulado)", status_code=303
-    )
+    return RedirectResponse(url="/?msg=Invitaciones+enviadas+(simulado)", status_code=303)
 
 
 @app.post("/reset-asistencias")
@@ -183,6 +169,4 @@ if __name__ == "__main__":
     print(f"IP local usada: {LOCAL_IP}")
     print("Generando base de datos e invitaciones...")
     cargar_invitados(regenerar_qrs=regenerar)
-    print(
-        "Listo. Ahora ejecuta 'poetry run uvicorn main:app --host 0.0.0.0 --port 8000'"
-    )
+    print("Listo. Ahora ejecuta 'poetry run uvicorn main:app --host 0.0.0.0 --port 8000'")
