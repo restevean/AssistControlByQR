@@ -25,8 +25,8 @@ A lightweight FastAPI + SQLite app for managing event invitations using unique Q
 
    ```
    bash
-   
-   
+
+
    CopiarEditar
    poetry install
    ```
@@ -36,8 +36,8 @@ A lightweight FastAPI + SQLite app for managing event invitations using unique Q
 
    ```
    csv
-   
-   
+
+
    CopiarEditar
    nombre,email
    Alice,alice@example.com
@@ -48,8 +48,8 @@ A lightweight FastAPI + SQLite app for managing event invitations using unique Q
 
    ```
    bash
-   
-   
+
+
    CopiarEditar
    python main.py --regenerar
    ```
@@ -58,8 +58,8 @@ A lightweight FastAPI + SQLite app for managing event invitations using unique Q
 
    ```
    bash
-   
-   
+
+
    CopiarEditar
    poetry run uvicorn main:app --host 0.0.0.0 --port 8000
    ```
@@ -88,8 +88,8 @@ Uses SQLite (`invitados.db`) and SQLAlchemy ORM.
 
   ```
   python
-  
-  
+
+
   CopiarEditar
   from sqlalchemy import create_engine
   engine = create_engine('sqlite:///./invitados.db')
