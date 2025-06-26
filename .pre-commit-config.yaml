@@ -16,14 +16,10 @@ repos:
     hooks:
       - id: ruff-format-and-stage
         name: Format and stage Python files with Ruff
-        entry: |
-          bash -c '
-          ruff format . || true
-          git diff --name-only --diff-filter=ACM | grep -E "\.py$" | xargs -r git add
-          '
+        entry: python scripts/format_and_stage.py
         language: system
-        pass_filenames: false
-        stages: [pre-commit]
+        pass_filenames: true
+        stages: [ pre-commit ]
 
       - id: run-tests
         name: Run tests using pytest before push

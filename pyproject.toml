@@ -39,7 +39,9 @@ isort = "^6.0.1"
 mypy = "^1.16.1"
 coverage = "^7.9.1"
 pre-commit = "^4.2.0"
+ruff = "^0.12.0"
 
 [tool.ruff]
+exclude = ["*.md"]
 extend-exclude = ["**/*.db"]
 force-exclude = true
