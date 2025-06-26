@@ -42,6 +42,13 @@ pre-commit = "^4.2.0"
 ruff = "^0.12.0"
 
 [tool.ruff]
+line-length = 120
+select = ["E", "F", "W", "I"]  # Agrega más si quieres reglas más estrictas
+include = ["*.py"]
 exclude = ["*.md"]
 extend-exclude = ["**/*.db"]
 force-exclude = true
+
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "single"
