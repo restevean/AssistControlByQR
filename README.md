@@ -26,8 +26,6 @@ A lightweight FastAPI + SQLite app for managing event invitations using unique Q
    ```
    bash
 
-
-   CopiarEditar
    poetry install
    ```
 
@@ -37,8 +35,6 @@ A lightweight FastAPI + SQLite app for managing event invitations using unique Q
    ```
    csv
 
-
-   CopiarEditar
    nombre,email
    Alice,alice@example.com
    Bob,bob@example.com
@@ -49,8 +45,6 @@ A lightweight FastAPI + SQLite app for managing event invitations using unique Q
    ```
    bash
 
-
-   CopiarEditar
    python main.py --regenerar
    ```
 
@@ -59,8 +53,6 @@ A lightweight FastAPI + SQLite app for managing event invitations using unique Q
    ```
    bash
 
-
-   CopiarEditar
    poetry run uvicorn main:app --host 0.0.0.0 --port 8000
    ```
 
@@ -89,8 +81,6 @@ Uses SQLite (`invitados.db`) and SQLAlchemy ORM.
   ```
   python
 
-
-  CopiarEditar
   from sqlalchemy import create_engine
   engine = create_engine('sqlite:///./invitados.db')
   engine.execute('ALTER TABLE invitados ADD COLUMN fecha_hora DATETIME')
@@ -101,8 +91,6 @@ Uses SQLite (`invitados.db`) and SQLAlchemy ORM.
 ```
 bash
 
-
-CopiarEditar
 .
 ├── main.py           # FastAPI application
 ├── invitados.csv     # Contacts input
@@ -118,3 +106,7 @@ CopiarEditar
 - Implement real email sending using SMTP/AWS SES/SendGrid.
 - Add authentication to restrict dashboard access.
 - Export attendance report (CSV, PDF).
+
+---
+
+> **Note:** This project was created entirely using AI, as a practical prompt engineering exercise within the Master’s in AI and Innovation 2025.
