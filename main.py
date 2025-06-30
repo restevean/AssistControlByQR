@@ -16,7 +16,7 @@ DB_PATH = 'sqlite:///./invitados.db'
 CSV_PATH = 'invitados.csv'
 QR_DIR = 'static/qrs'
 TEMPLATES_DIR = 'templates'
-LOCAL_IP = '192.168.28.186'
+LOCAL_IP = '192.168.8.194'
 
 # Create needed directories
 for path in ['static', QR_DIR, TEMPLATES_DIR]:
